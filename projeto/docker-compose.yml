@@ -1,0 +1,41 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: ot_app
+        restart: always
+        volumes:
+            - ./:/app
+        depends_on:
+            - db
+        networks:
+            - ot-net
+    db:
+        image: mysql:8
+        container_name: ot_db
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: ot
+        ports:
+            - '3306:3306'
+        networks:
+            - ot-net
+    nginx:
+        image: nginx
+        restart: always
+        volumes:
+            - ./:/app:ro
+            - ./nginx:/etc/nginx/conf.d
+            - /tmp/nginx:/var/log/nginx
+        ports:
+            - '4001:4001'
+        networks:
+            - ot-net
+        depends_on:
+            - app
+            - db
+networks:
+    ot-net:
+        driver: bridge
