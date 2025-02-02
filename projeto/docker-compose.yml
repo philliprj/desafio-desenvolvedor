@@ -24,6 +24,7 @@ services:
             - ot-net
     nginx:
         image: nginx
+        container_name: ot_nginx
         restart: always
         volumes:
             - ./:/app:ro
