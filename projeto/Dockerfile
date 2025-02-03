@@ -25,11 +25,11 @@ RUN docker-php-ext-install exif
 RUN docker-php-ext-install pcntl
 RUN docker-php-ext-install bcmath
 
-RUN echo "upload_max_filesize = 100M" > /usr/local/etc/php/conf.d/uploads.ini \
- && echo "post_max_size = 100M" >> /usr/local/etc/php/conf.d/uploads.ini \
- && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini \
- && echo "max_execution_time = 1200" >> /usr/local/etc/php/conf.d/uploads.ini \
- && echo "default_socket_timeout = 600" >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo "upload_max_filesize = 1G" > /usr/local/etc/php/conf.d/uploads.ini \
+ && echo "post_max_size = 1G" >> /usr/local/etc/php/conf.d/uploads.ini \
+ && echo "memory_limit = 1G" >> /usr/local/etc/php/conf.d/uploads.ini \
+ && echo "max_execution_time = 6000" >> /usr/local/etc/php/conf.d/uploads.ini \
+ && echo "default_socket_timeout = 6000" >> /usr/local/etc/php/conf.d/uploads.ini
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 COPY --from=composer /usr/bin/composer /usr/bin/composer
