@@ -3,48 +3,54 @@
 namespace App\Imports;
 
 use App\Models\Upload;
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\WithStartRow;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use \PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
-class ExcelImport implements ToCollection
+class ExcelImport implements ToModel, WithChunkReading, WithStartRow, ShouldQueue, WithBatchInserts
 {
-    protected $historyId;
+    protected $uploadHistoryId;
     protected $skipRows;
 
-    public function __construct($historyId, $skipRows = 2)
+    public function __construct($uploadHistoryId, $skipRows = 2)
     {
-        $this->historyId = $historyId;
-        $this->skipRows  = $skipRows;
+        $this->uploadHistoryId = $uploadHistoryId;
+        $this->skipRows        = $skipRows;
     }
 
-    public function collection(Collection $rows)
+    public function startRow(): int
     {
-        if ($this->skipRows > 0) {
-            $rows = $rows->slice($this->skipRows);
+        return $this->skipRows + 1;
+    }
+
+    public function batchSize(): int
+    {
+        return 20000;
+    }
+
+    public function chunkSize(): int
+    {
+        return 10000;
+    }
+
+    public function model(array $row)
+    {
+        $rptDt = $row[0] ?? null;
+        if (is_numeric($rptDt)) {
+            $rptDt = ExcelDate::excelToDateTimeObject($rptDt)->format('Y-m-d');
         }
 
-        foreach ($rows as $row) {
-            $rptDt = $row[0] ?? null;
-            if (is_numeric($rptDt)) {
-                $rptDt = ExcelDate::excelToDateTimeObject($rptDt)->format('Y-m-d');
-            }
-
-            $tckrSymb= $row[1] ?? null;
-            $mktNm   = $row[5] ?? null;
-            $sctyCtgy= $row[6] ?? null;
-            $isin    = $row[15]?? null;
-            $crpnNm  = $row[45]?? null;
-
-            Upload::create([
-                'upload_history_id' => $this->historyId,
-                'RptDt'      => $rptDt,
-                'TckrSymb'   => $tckrSymb,
-                'MktNm'      => $mktNm,
-                'SctyCtgyNm' => $sctyCtgy,
-                'ISIN'       => $isin,
-                'CrpnNm'     => $crpnNm,
-            ]);
-        }
+        return new Upload([
+            'upload_history_id' => $this->uploadHistoryId,
+            'RptDt'      => $rptDt,
+            'TckrSymb'   => $row[1]  ?? null,
+            'MktNm'      => $row[5]  ?? null,
+            'SctyCtgyNm' => $row[6]  ?? null,
+            'ISIN'       => $row[15] ?? null,
+            'CrpnNm'     => $row[45] ?? null,
+        ]);
     }
 }

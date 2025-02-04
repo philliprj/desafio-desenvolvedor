@@ -13,6 +13,7 @@ class UploadHistory extends Model
         'file_name',
         'file_hash',
         'reference_date',
+        'status'
     ];
 
     public function uploads()

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('file_name');
             $table->string('file_hash')->unique();
             $table->date('reference_date')->nullable();
+            $table->string('status')->default('QUEUED');
             $table->timestamps();
         });
     }

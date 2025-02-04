@@ -1,6 +1,7 @@
 FROM php:8.4-fpm
 
 RUN apt-get update && apt-get install -y \
+    supervisor \
     git \
     curl \
     libpng-dev \
@@ -33,6 +34,10 @@ RUN echo "upload_max_filesize = 1G" > /usr/local/etc/php/conf.d/uploads.ini \
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+RUN mkdir -p /var/log/supervisor
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY laravel-worker.conf /etc/supervisor/conf.d/laravel-worker.conf
 
 WORKDIR /app
 

@@ -3,11 +3,14 @@
 namespace App\Imports;
 
 use App\Models\Upload;
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\ToCollection;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
+use Maatwebsite\Excel\Concerns\WithStartRow;
 
-class CsvImport implements ToCollection, WithCustomCsvSettings
+class CsvImport implements ToModel, WithChunkReading, ShouldQueue, WithCustomCsvSettings, WithStartRow, WithBatchInserts
 {
     protected $historyId;
     protected $skipRows;
@@ -16,6 +19,21 @@ class CsvImport implements ToCollection, WithCustomCsvSettings
     {
         $this->historyId = $historyId;
         $this->skipRows = $skipRows;
+    }
+
+    public function startRow(): int
+    {
+        return $this->skipRows + 1;
+    }
+
+    public function batchSize(): int
+    {
+        return 20000;
+    }
+
+    public function chunkSize(): int
+    {
+        return 20000;
     }
 
     public function getCsvSettings(): array
@@ -29,29 +47,17 @@ class CsvImport implements ToCollection, WithCustomCsvSettings
         ];
     }
 
-    public function collection(Collection $rows)
+    public function model(array $row)
     {
-        if ($this->skipRows > 0) {
-            $rows = $rows->slice($this->skipRows);
-        }
+        Upload::create([
+            'upload_history_id' => $this->historyId,
+            'RptDt'             => $row[0] ?? null,
+            'TckrSymb'          => $row[1] ?? null,
+            'MktNm'             => $row[5] ?? null,
+            'SctyCtgyNm'        => $row[6] ?? null,
+            'ISIN'              => $row[15] ?? null,
+            'CrpnNm'            => $row[45] ?? null,
+        ]);
 
-        foreach ($rows as $row) {
-            $rptDt = $row[0] ?? null;
-            $tckrSymb = $row[1] ?? null;
-            $mktNm = $row[5] ?? null;
-            $sctyCtgy = $row[6] ?? null;
-            $isin = $row[15] ?? null;
-            $crpnNm = $row[45] ?? null;
-
-            Upload::create([
-                'upload_history_id' => $this->historyId,
-                'RptDt'             => $rptDt,
-                'TckrSymb'          => $tckrSymb,
-                'MktNm'             => $mktNm,
-                'SctyCtgyNm'        => $sctyCtgy,
-                'ISIN'              => $isin,
-                'CrpnNm'            => $crpnNm,
-            ]);
-        }
     }
 }
