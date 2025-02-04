@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('uploads', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('upload_histories_id');
-            $table->foreign('upload_histories_id')
+            $table->unsignedBigInteger('upload_history_id');
+            $table->foreign('upload_history_id')
                 ->references('id')
                 ->on('upload_histories')
                 ->onDelete('cascade');
