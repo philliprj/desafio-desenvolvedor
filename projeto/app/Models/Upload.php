@@ -9,8 +9,6 @@ class Upload extends Model
 {
     use HasFactory;
 
-    protected $table = 'uploads';
-
     protected $fillable = [
         'upload_history_id',
         'RptDt',
