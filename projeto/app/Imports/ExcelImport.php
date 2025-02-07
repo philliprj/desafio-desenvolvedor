@@ -28,12 +28,12 @@ class ExcelImport implements ToModel, WithChunkReading, WithStartRow, ShouldQueu
 
     public function batchSize(): int
     {
-        return 20000;
+        return 5000;
     }
 
     public function chunkSize(): int
     {
-        return 10000;
+        return 5000;
     }
 
     public function model(array $row)
