@@ -13,7 +13,10 @@
 Após clonar o projeto, executar os comandos na raiz:
 
 - Criar o arquivo .env na raiz do projeto e copiar o conteúdo .env.example
-
+- Dar permissão para o arquivo commands.sh
+``
+  chmod +x commands.sh
+``
 - Para iniciar os containers: 
 ``
 docker composer up -d
